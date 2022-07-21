@@ -3,13 +3,34 @@ from ctypes import HRESULT
 import enum
 from typing import Optional, List
 from unicodedata import name
+from urllib import response
 from click import password_option
 import uvicorn
 from enum import Enum
-from fastapi import FastAPI, status
-from pydantic import BaseModel, HttpUrl
+from fastapi import FastAPI, status, Query, Path, Cookie, Header
+from pydantic import BaseModel, HttpUrl, parse_obj_as, Field
+from typing import List
 
 app = FastAPI()
+
+
+inventory = (
+    {
+        "id" : 1,
+        "user_id" : 1,
+        "name": "포션",
+        "price": 2500.0,
+        "amount" : 100,
+    },
+    {
+        "id" : 2,
+        "user_id" : 1,
+        "name": "won",
+        "price": 500.0,
+        "amount" : 50,
+    },
+)
+
 
 class CreateUser(BaseModel):
     name: str
@@ -25,6 +46,17 @@ class Item(BaseModel):
     price : float
     amount = 0
 
+class Item2(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100, title="이름")
+    price: float = Field(None, ge=0)
+    amount: int = Field(
+        default=1,
+        gt=0,
+        le=100,
+        title="수량",
+        description="아이템 갯수. 1~100개 까지 소지 가능"
+    )
+
 
 class UserLeveL(str, Enum):
     a = "a"
@@ -37,6 +69,38 @@ class User(BaseModel):
     avatar_url: Optional[HttpUrl] = None
     inventory: List[Item] = []
 
+@app.get("/header")
+def get_headers(x_token: str = Header(None, title="토큰")):
+    return {"X-Token": x_token}
+
+
+@app.get("/cookie")
+def get_cookie(ga: str = Cookie(None)):
+    return {"ga": ga}
+
+@app.get("/user/{user_id}/item")
+def create_item(item: Item2):
+    return item
+
+
+@app.get("/user/{user_id}/inventory", response_model=List[Item])
+def get_item(
+    user_id: int = Path(..., gt=0, title="사용자 ID", description="DB의 user.id"),
+    name: str = Query(None, min_length=1, max_length=3, title="아이템 이름"),
+):
+    user_items = []
+    for item in inventory:
+        if item["user_id"] == user_id:
+            user_items.append(item)
+
+    response = []
+    for item in user_items:
+        if name is None:
+            response = user_items
+            break
+        if item["name"] == name:
+            response.append(item)
+    return response
 
 
 @app.get("/")

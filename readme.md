@@ -66,6 +66,29 @@
         201의미: 요청이 성공적으로 처리되서 리소스가 만들어졌음을 의미.
 
 
+# 데이터 검증
+    FastAPI가 자동으로 Path와 Query 함수를 인지했지만
+    Path(), Query() 함수를 이용하면 매개변수를 명시적으로 정의 가능, 다양한 옵션 추가.
+
+    gt, ge, lt, le : 숫자
+    min_length, max_length : str
+    min_items, max_items: 컬렉션(e.g. List, Set)
+    regex 옵션으로 정규 표현식 검증도 가능.
+
+    Field: pydantic의 model 변수 선언에 제약조건을 걸어줌.
+
+# Cookie
+    사이트에서 정보 수집을 하는 프로그램에서 자주 사용.
+    ga: 구글 애널리틱스가 굽는 쿠키 이름.
+
+    Cookie:<key>=<value>;<key>=<value>로 작성.
+
+# Header
+    x_ 접두어: 사용자 정의 헤더를 의미
+    '-' 대신에 '_' 사용해야함.
+
+
+
 
     
 
